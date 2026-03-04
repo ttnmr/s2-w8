@@ -15,7 +15,7 @@ public class Forest {
     private Tree[][] grid;
 
     public Forest(String name, String type, String vegetation, double burnRate, int burnDuration, int initialTreeCount, int gridRows, int gridCols) {
-        this.grid = null; //TODO; initialize grid to using gridRows and gridCols
+        this.grid = new Tree[gridRows][gridCols]; //TODO; initialize grid to using gridRows and gridCols
         this.name = name;
         this.type = type;
         this.vegetation = vegetation;
@@ -29,32 +29,84 @@ public class Forest {
         // Step 1: Determine how many cells in the grid should start as TREE
         //         based on initialTreeCount and the grid dimensions.
         // Step 2: Fill the grid with EMPTY trees first so every cell has a Tree object.
+        for (int r = 0; r < grid.length; r++) {
+            for (int c = 0; c < grid[0].length; c++) {
+                grid[r][c] = new Tree(0);
+            }
+        }
         // Step 3: Randomly place TREE states until the target initial tree count is reached.
+        for (int i = 0; i < initialTreeCount; i++) {
+            int r1 = (int) (Math.random()*6);
+            int r2 = (int) (Math.random()*6);
+            if (grid[r1][r2].getState() == 0) {
+                grid[r1][r2] = new Tree(1);
+            }
+        }
         // Step 4: Reset any burn-time/state tracking needed for a fresh simulation start.
+
     }
 
     public Tree[][] deepCopy(){
         // Step 1: Create a new Tree[][] with the same dimensions as grid.
+        Tree[][] grid2 = grid;
         // Step 2: Loop through every cell in grid.
+        for (int r = 0; r < grid.length; r++) {
+            for (int c = 0; c < grid[0].length; c++) {
         // Step 3: Copy each Tree by value (state and burnTime), not by reference.
+                grid2[r][c] = new Tree(grid[r][c]);
+            }
+        }
         // Step 4: Return the copied Tree[][].
-        return null;
+        return grid2;
     }
 
     public void spreadFire() {
         // Step 1: Call deepCopy() to create a separate "next step" grid so updates happen simultaneously.
+        Tree[][] grid2 = deepCopy();
         // Step 2: For each BURNING tree, check valid neighbors (up/down/left/right).
+        for (int r = 0; r < grid.length; r++) {
+            for (int c = 0; c < grid[0].length; c++) {
+                if (grid[r][c].getState() == 2) {
         // Step 3: For each neighboring TREE, ignite it with probability burnRate.
+                    if (r < grid.length-1 && Math.random() > burnRate) {
+                        grid2[r+1][c].setState(2);
+                    }
+                    if (r > 0 && Math.random() > burnRate) {
+                        grid2[r-1][c].setState(2);
+                    }
+                    if (c < grid[0].length-1 && Math.random() > burnRate) {
+                        grid2[r][c+1].setState(2);
+                    }
+                    if (c < 0 && Math.random() > burnRate) {
+                        grid2[r][c-1].setState(2);
+                    }
         // Step 4: Increase burn time of currently burning trees.
+                    grid2[r][c].setBurnTime(grid[r][c].getBurnTime() + 1);
         // Step 5: Turn trees to EMPTY once burn time reaches burnDuration.
+                    if (grid2[r][c].getBurnTime() == burnDuration) {
+                        grid2[r][c].setState(0);
+                    }
+                }
+            }
+        }
         // Step 6: Replace the current grid with the updated next-step grid.
+        grid = grid2;
     }
 
     public double percentBurned() {
         // Step 1: Count how many trees have burned out (commonly represented as EMPTY after burning).
+        int burnedCount = 0;
+        for (int r = 0; r < grid.length; r++) {
+            for (int c = 0; c < grid[0].length; c++) {
+                if (grid[r][c].getState() == 0 && grid[r][c].getBurnTime() == burnDuration) {
+                    burnedCount++;
+                }
+            }
+        }
         // Step 2: Compute and return (burnedCount * 100.0) / initialTreeCount as a percentage.
         // Step 3: Guard against divide-by-zero if the initialTreeCount is 0.
-        return 0.0;
+        if (initialTreeCount != 0) return (burnedCount*100.0)/initialTreeCount;
+        else return -1;
     }
 
     public void saveGridSnapshotToFile() {
