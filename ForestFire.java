@@ -34,19 +34,18 @@ public class ForestFire {
         //   - At the end, print percentBurned() and summary stats.
         //   - At the end of each simulation step, you should write the current state of the Tree[][] grid to a file
 
-        BufferedWriter writer = new BufferedWriter(new PrintWriter("simulation-results.txt"));
         for (int i = 0; i < duration; i++) {
-            // String results = "";
-            // f.spreadFire();
-            // try{
-            // BufferedWriter writer = new BufferedWriter(new PrintWriter("simulation-results.txt"));
-            // for (int r = 0; r < grid.length; r++) {
-            //     for (int c = 0; c < grid[0].length; c++) {
-            //         Tree[][] t = f.getGrid();
-            //         results += t[r][c].getState();
-            //     }
-            // }
-            writer.write();
+            String results = "";
+            f.spreadFire();
+            try{
+            BufferedWriter writer = new BufferedWriter(new PrintWriter("simulation-results.txt"));
+            Tree[][] t = f.getGrid();
+            for (int r1 = 0; r1 < t.length; r1++) {
+                for (int c = 0; c < t[0].length; c++) {
+                    results += t[r1][c].getState();
+                }
+            }
+            writer.write(results);
             writer.close();
             } catch (IOException e) {
                 System.out.println("Error");
